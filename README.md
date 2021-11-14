@@ -1,39 +1,56 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+A Dart [build](https://pub.dev/packages/build) package to compile [Protocol Buffer](https://developers.google.com/protocol-buffers)
+files to Dart source code using [build_runner](https://github.com/protocolbuffers/protobuf) (i.e.
+the Dart build pipline) without needing to manually install the [protoc](https://github.com/protocolbuffers/protobuf)
+compiler or the Dart Protobuf plugin [protoc_plugin](https://github.com/protocolbuffers/protobuf).
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+The `protoc_builder` package downloads the necessary Protobuf dependencies for your platform to a
+temporary local directory, thereby streamlining the development process.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
-
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
-```dart
-const like = 'sample';
+## Installation
+Add the necessary dependencies to your `pubspec.yaml` file:
+```yaml
+dev_dependencies:
+  build_runner: <latest>
+  protoc_builder: <latest>
 ```
 
-## Additional information
+## Configuration
+You must add your `.proto` files to a `build.yaml` file next to the `pubspec.yaml`:
+```yaml
+targets:
+  $default:
+    sources:
+      - $package$
+      - lib/$lib$
+      - proto/** # Your .proto directory
+```
+This will use the default configuration for the `protoc_builder`.
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+You may also configure custom options:
+```yaml
+targets:
+  $default:
+    sources:
+      - $package$
+      - lib/$lib$
+      - proto/**
+    builders:
+      protoc_builder:
+        options:
+          # The version of the Protobuf compiler to use.
+          protobuf_version: "3.19.1" # Make sure to use quotation marks
+          # The version of the Dart protoc_plugin package to use.
+          protoc_plugin_version: "20.0.0" # Make sure to use quotation marks
+          # Include paths given to the Protobuf compiler during compilation.
+          proto_paths:
+            - "proto/"
+          # The root directory for generated Dart output files.
+          out_dir: "lib/src/generated"
+```
+
+## Running
+Once everything is set up, you may simply run the `build_runner` package:
+```bash
+pub run build_runner build
+```
+The `build_runner` sometimes caches results longer than it should, so in some cases, it may be necessary to delete the `.dart_tool/build` directory.

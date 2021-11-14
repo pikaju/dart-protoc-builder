@@ -6,4 +6,3 @@ builders:
       ".proto": [".dart"]
     }
     auto_apply: dependents
-    build_to: cache

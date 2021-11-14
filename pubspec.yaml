@@ -1,6 +1,6 @@
 name: protoc_builder
-description: A build script for compiling Protocol Buffers without needing to install protoc.
-version: 1.0.0
+description: A build script for compiling Protocol Buffers without needing to manually install protoc or the protoc_plugin.
+version: 0.1.0
 
 environment:
   sdk: '>=2.14.4 <3.0.0'
