@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+message MyMessage {
+    int32 value = 1;
+}
+
+service MyService {
+    rpc MyMethod (MyMessage) returns (google.protobuf.Empty);
+}

@@ -1,0 +1,12 @@
+name: example
+description: An example application for the package.
+
+environment:
+  sdk: '>=2.14.4 <3.0.0'
+
+dev_dependencies:
+  build_runner: ^2.1.5
+  lints: ^1.0.0
+  protoc_builder:
+    path: ../
+

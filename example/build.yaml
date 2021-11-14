@@ -1,0 +1,15 @@
+targets:
+  $default:
+    sources:
+      - $package$
+      - lib/$lib$
+      - proto/**
+    builders:
+      protoc_builder:
+        options:
+          protobuf_version: "3.19.1"
+          protoc_plugin_verson: "20.0.0"
+          root_dir: "proto/"
+          proto_paths:
+            - "proto/"
+          out_dir: "lib/src/generated"
