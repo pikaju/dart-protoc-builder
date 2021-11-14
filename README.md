@@ -38,9 +38,9 @@ targets:
       protoc_builder:
         options:
           # The version of the Protobuf compiler to use.
-          protobuf_version: "3.19.1" # Make sure to use quotation marks
+          protobuf_version: "3.19.1" # Make sure to use quotation marks.
           # The version of the Dart protoc_plugin package to use.
-          protoc_plugin_version: "20.0.0" # Make sure to use quotation marks
+          protoc_plugin_version: "20.0.0" # Make sure to use quotation marks.
           # Include paths given to the Protobuf compiler during compilation.
           proto_paths:
             - "proto/"
