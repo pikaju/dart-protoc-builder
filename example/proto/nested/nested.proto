@@ -1,7 +1,9 @@
 syntax = "proto3";
 
+import "my_proto.proto";
+
 package nested;
 
 message MyNestedMessage {
-    
+    MyMessage message = 1;
 }

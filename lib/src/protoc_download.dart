@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:archive/archive.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+
+import 'utility.dart';
+
+/// A [Directory] to store all downloaded versions of the proto compiler.
+final Directory _compilerDirectory =
+    Directory(path.join(temporaryDirectory.path, 'compiler'));
 
 Uri _protocUriFromVersion(String version) {
   String platformString;
@@ -31,36 +35,24 @@ String _protocExecutableName() {
 /// Downloads the Protobuf compiler from the GitHub Releases page and extracts
 /// it to a temporary working directory.
 /// Returns the path to the protoc executable that can be used by a [Process].
-Future<String> downloadProtoc(String version) async {
+Future<File> fetchProtoc(String version) async {
   // Create a temporary directory for the proto compiler of the given version.
-  final tempDirectory = path.join(
-    '.dart_tool',
-    'build',
-    'protoc_builder',
-    'compiler',
+  final versionDirectory = Directory(path.join(
+    _compilerDirectory.path,
     'v${version.replaceAll('.', '_')}',
+  ));
+  final protoc = File(
+    path.join(versionDirectory.path, 'bin', _protocExecutableName()),
   );
-  final protoc = path.join(tempDirectory, 'bin', _protocExecutableName());
 
-  // If the compiler has already been downloaded, the function is done.
-  if (await Directory(tempDirectory).exists()) return protoc;
+  // If the compiler version has already been downloaded, the function is done.
+  if (await versionDirectory.exists()) return protoc;
 
   // Download and unzip the .zip file containing protoc and Google .proto files.
-  final archive = ZipDecoder()
-      .decodeBytes(await http.readBytes(_protocUriFromVersion(version)));
-  for (final file in archive) {
-    final filename = file.name;
-    if (file.isFile) {
-      final fileHandle = File(path.join(tempDirectory, filename));
-      await fileHandle.create(recursive: true);
-      await fileHandle.writeAsBytes(file.content as List<int>);
-    }
-  }
+  await unzipUri(_protocUriFromVersion(version), versionDirectory);
 
   // Make protoc executable on non-Windows platforms.
-  if (!Platform.isWindows) {
-    await Process.run('chmod', ['+x', protoc]);
-  }
+  await addRunnableFlag(protoc);
 
   return protoc;
 }

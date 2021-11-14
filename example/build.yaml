@@ -8,8 +8,7 @@ targets:
       protoc_builder:
         options:
           protobuf_version: "3.19.1"
-          protoc_plugin_verson: "20.0.0"
-          root_dir: "proto/"
+          protoc_plugin_version: "20.0.0"
           proto_paths:
             - "proto/"
           out_dir: "lib/src/generated"
