@@ -47,6 +47,10 @@ class ProtocBuilder implements Builder {
 
     final inputPath = path.normalize(buildStep.inputId.path);
 
+    // Read the input path to signal to the build graph that if the file changes
+    // than it should be rebuilt.
+    await buildStep.readAsString(buildStep.inputId);
+
     await Directory(outputDirectory).create(recursive: true);
     await ProcessExtensions.runSafely(
       protoc.path,
