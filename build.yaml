@@ -3,6 +3,6 @@ builders:
     import: "package:protoc_builder/protoc_builder.dart"
     builder_factories: ["getBuilder"]
     build_extensions: {
-      ".proto": [".dart"]
+      ".proto": [".dart", ".pb"]
     }
     auto_apply: dependents

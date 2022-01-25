@@ -12,3 +12,4 @@ targets:
           proto_paths:
             - "proto/"
           out_dir: "lib/src/generated"
+          build_descriptor: true
