@@ -47,6 +47,10 @@ class ProtocBuilder implements Builder {
 
     final inputPath = path.normalize(buildStep.inputId.path);
 
+    // Read the input path to signal to the build graph that if the file changes
+    // than it should be rebuilt.
+    await buildStep.readAsString(buildStep.inputId);
+
     await Directory(outputDirectory).create(recursive: true);
     await ProcessExtensions.runSafely(
       protoc.path,
@@ -58,6 +62,16 @@ class ProtocBuilder implements Builder {
         path.join('.', inputPath),
       ],
     );
+
+    // Just as with the read, the build runner spies on what we write, so we
+    // need to write each output file explicitly, even though they've already
+    // been written by protoc. This will ensure that if an output file is
+    // deleted, a future build will recreate it. This also checks that the files
+    // we were expected to write were actually written, since this will fail if
+    // an output file wasn't created by protoc.
+    await Future.wait(buildStep.allowedOutputs.map((AssetId out) async {
+      await buildStep.writeAsBytes(out, File(out.path).readAsBytes());
+    }));
   }
 
   @override
