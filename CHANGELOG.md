@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Add config flag for generating gRPC clients and servers (`.pbgrpc.dart` files)
+
 ## 0.1.1
 
 * Ensure that changes to input `.proto` files are watched (thank you to [ewaters](https://github.com/ewaters)!)

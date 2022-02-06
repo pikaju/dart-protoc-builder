@@ -15,6 +15,7 @@ class ProtocBuilder implements Builder {
   static const defaultRootDirectory = 'proto/';
   static const defaultProtoPaths = ['proto/'];
   static const defaultOutputDirectory = 'lib/src/proto/';
+  static const defaultGrpcEnabled = false;
 
   ProtocBuilder(this.options)
       : protobufVersion = options.config['protobuf_version'] as String? ??
@@ -30,7 +31,8 @@ class ProtocBuilder implements Builder {
                 .toList() ??
             defaultProtoPaths,
         outputDirectory = path.normalize(
-            options.config['out_dir'] as String? ?? defaultOutputDirectory);
+            options.config['out_dir'] as String? ?? defaultOutputDirectory),
+        grpcEnabled = options.config['grpc'] as bool? ?? defaultGrpcEnabled;
 
   final BuilderOptions options;
 
@@ -39,6 +41,7 @@ class ProtocBuilder implements Builder {
   final String rootDirectory;
   final List<String> protoPaths;
   final String outputDirectory;
+  final bool grpcEnabled;
 
   @override
   Future<void> build(BuildStep buildStep) async {
@@ -46,6 +49,8 @@ class ProtocBuilder implements Builder {
     final protocPlugin = await fetchProtocPlugin(protocPluginVersion);
 
     final inputPath = path.normalize(buildStep.inputId.path);
+
+    final pluginParameters = grpcEnabled ? 'grpc:' : '';
 
     // Read the input path to signal to the build graph that if the file changes
     // than it should be rebuilt.
@@ -56,7 +61,7 @@ class ProtocBuilder implements Builder {
       protoc.path,
       [
         '--plugin=protoc-gen-dart=${protocPlugin.path}',
-        '--dart_out=${path.join('.', outputDirectory)}',
+        '--dart_out=$pluginParameters${path.join('.', outputDirectory)}',
         ...protoPaths
             .map((protoPath) => '--proto_path=${path.join('.', protoPath)}'),
         path.join('.', inputPath),
@@ -70,7 +75,14 @@ class ProtocBuilder implements Builder {
     // we were expected to write were actually written, since this will fail if
     // an output file wasn't created by protoc.
     await Future.wait(buildStep.allowedOutputs.map((AssetId out) async {
-      await buildStep.writeAsBytes(out, File(out.path).readAsBytes());
+      final file = File(out.path);
+      // When there is no service definition in a .proto file, the respective
+      // .pbgrpc.dart file is not generated. So, we will tolerate its absence.
+      if (file.path.endsWith('.pbgrpc.dart') && !await file.exists()) {
+        return;
+      }
+
+      await buildStep.writeAsBytes(out, file.readAsBytes());
     }));
   }
 
@@ -81,7 +93,8 @@ class ProtocBuilder implements Builder {
         path.join(outputDirectory, '{{}}.pb.dart'),
         path.join(outputDirectory, '{{}}.pbenum.dart'),
         path.join(outputDirectory, '{{}}.pbjson.dart'),
-        path.join(outputDirectory, '{{}}.pbserver.dart'),
+        if (!grpcEnabled) path.join(outputDirectory, '{{}}.pbserver.dart'),
+        if (grpcEnabled) path.join(outputDirectory, '{{}}.pbgrpc.dart'),
       ],
     };
   }

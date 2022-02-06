@@ -1,6 +1,6 @@
 name: protoc_builder
 description: A build script for compiling Protocol Buffers without needing to manually install protoc or the protoc_plugin.
-version: 0.1.1
+version: 0.2.0
 repository: https://github.com/pikaju/dart-protoc-builder
 
 environment:

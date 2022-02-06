@@ -46,6 +46,8 @@ targets:
             - "proto/"
           # The root directory for generated Dart output files.
           out_dir: "lib/src/generated"
+          # Enable the gRPC flag for the Dart protoc plugin to generate `.pbgrpc.dart` files.
+          grpc: true
 ```
 
 ## Running
