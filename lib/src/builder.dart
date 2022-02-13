@@ -53,7 +53,7 @@ class ProtocBuilder implements Builder {
     final pluginParameters = grpcEnabled ? 'grpc:' : '';
 
     // Read the input path to signal to the build graph that if the file changes
-    // than it should be rebuilt.
+    // then it should be rebuilt.
     await buildStep.readAsString(buildStep.inputId);
 
     await Directory(outputDirectory).create(recursive: true);
