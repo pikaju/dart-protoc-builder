@@ -1,3 +1,7 @@
+## 0.2.1+1
+
+* I dun goofed
+
 ## 0.2.1
 
 * Document default values in README
