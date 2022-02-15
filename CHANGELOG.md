@@ -1,3 +1,8 @@
+## 0.2.1
+
+* Document default values in README
+* Document Protobuf root directory in README
+
 ## 0.2.0
 
 * Add config flag for generating gRPC clients and servers (`.pbgrpc.dart` files)

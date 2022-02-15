@@ -8,13 +8,21 @@ targets:
       protoc_builder:
         options:
           # The version of the Protobuf compiler to use.
-          protobuf_version: "3.19.1" # Make sure to use quotation marks.
+          # (Default: "3.19.1", make sure to use quotation marks)
+          protobuf_version: "3.19.1"
           # The version of the Dart protoc_plugin package to use.
-          protoc_plugin_version: "20.0.0" # Make sure to use quotation marks.
+          # (Default: "20.0.0", make sure to use quotation marks)
+          protoc_plugin_version: "20.0.0"
+          # Directory which is treated as the root of all Protobuf files.
+          # (Default: "proto/")
+          root_dir: "proto/"
           # Include paths given to the Protobuf compiler during compilation.
+          # (Default: ["proto/"])
           proto_paths:
             - "proto/"
           # The root directory for generated Dart output files.
+          # (Default: "lib/src/proto")
           out_dir: "lib/src/generated"
           # Enable the gRPC flag for the Dart protoc plugin to generate `.pbgrpc.dart` files.
+          # (Default: false)
           grpc: true
