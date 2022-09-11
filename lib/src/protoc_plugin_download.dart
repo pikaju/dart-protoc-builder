@@ -22,16 +22,21 @@ String _protoPluginName() {
 /// Returns the path to the binaries directory that should be added to the PATH
 /// environment variable for protoc to use.
 Future<File> fetchProtocPlugin(String version) async {
+  final packages = const ['protoc_plugin', 'protobuf'];
   // Create a temporary directory for the proto plugin of the given version.
   final versionDirectory = Directory(
       path.join(_pluginDirectory.path, 'v${version.replaceAll('.', '_')}'));
   final protocPluginPackageDirectory = Directory(path.join(
     versionDirectory.path,
     'protobuf.dart-protoc_plugin-v$version',
-    'protoc_plugin',
   ));
   final protocPlugin = File(
-    path.join(protocPluginPackageDirectory.path, 'bin', _protoPluginName()),
+    path.join(
+      protocPluginPackageDirectory.path,
+      'protoc_plugin',
+      'bin',
+      _protoPluginName(),
+    ),
   );
 
   // If the plugin has already been downloaded, the function is done.
@@ -42,12 +47,15 @@ Future<File> fetchProtocPlugin(String version) async {
     _protocPluginUriFromVersion(version),
     versionDirectory,
     // Only extract the protoc_plugin from the Protobuf Git repository.
-    (file) => path.split(file.name).contains('protoc_plugin'),
+    (file) => packages.contains(path.split(file.name)[1]),
   );
 
   // Fetch protoc_plugin package dependencies.
-  await ProcessExtensions.runSafely('dart', ['pub', 'get'],
-      workingDirectory: protocPluginPackageDirectory.path);
+  await Future.wait(packages.map((pkg) => ProcessExtensions.runSafely(
+        'dart',
+        ['pub', 'get'],
+        workingDirectory: path.join(protocPluginPackageDirectory.path, pkg),
+      )));
 
   // Make plugin executable on non-Windows platforms.
   await addRunnableFlag(protocPlugin);

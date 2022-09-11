@@ -11,8 +11,8 @@ targets:
           # (Default: "3.19.1", make sure to use quotation marks)
           protobuf_version: "3.19.1"
           # The version of the Dart protoc_plugin package to use.
-          # (Default: "20.0.0", make sure to use quotation marks)
-          protoc_plugin_version: "20.0.0"
+          # (Default: "20.0.1", make sure to use quotation marks)
+          protoc_plugin_version: "20.0.1"
           # Directory which is treated as the root of all Protobuf files.
           # (Default: "proto/")
           root_dir: "proto/"

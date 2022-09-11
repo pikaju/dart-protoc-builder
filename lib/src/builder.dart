@@ -11,7 +11,7 @@ import 'protoc_download.dart';
 
 class ProtocBuilder implements Builder {
   static const defaultProtocVersion = '3.19.1';
-  static const defaultProtocPluginVersion = '20.0.0';
+  static const defaultProtocPluginVersion = '20.0.1';
   static const defaultRootDirectory = 'proto/';
   static const defaultProtoPaths = ['proto/'];
   static const defaultOutputDirectory = 'lib/src/proto/';
