@@ -16,6 +16,7 @@ class ProtocBuilder implements Builder {
   static const defaultProtoPaths = ['proto/'];
   static const defaultOutputDirectory = 'lib/src/proto/';
   static const defaultGrpcEnabled = false;
+  static const defaultWellKnownTypesEnabled = false;
 
   ProtocBuilder(this.options)
       : protobufVersion = options.config['protobuf_version'] as String? ??
@@ -32,7 +33,8 @@ class ProtocBuilder implements Builder {
             defaultProtoPaths,
         outputDirectory = path.normalize(
             options.config['out_dir'] as String? ?? defaultOutputDirectory),
-        grpcEnabled = options.config['grpc'] as bool? ?? defaultGrpcEnabled;
+        grpcEnabled = options.config['grpc'] as bool? ?? defaultGrpcEnabled,
+        wellKnownTypesEnabled = options.config['wellKnownTypesEnabled'] as bool? ?? defaultWellKnownTypesEnabled;
 
   final BuilderOptions options;
 
@@ -42,11 +44,13 @@ class ProtocBuilder implements Builder {
   final List<String> protoPaths;
   final String outputDirectory;
   final bool grpcEnabled;
+  final bool wellKnownTypesEnabled;
 
   @override
   Future<void> build(BuildStep buildStep) async {
     final protoc = await fetchProtoc(protobufVersion);
     final protocPlugin = await fetchProtocPlugin(protocPluginVersion);
+    final wellKnownTypes = wellKnownTypesEnabled ? ' google/protobuf/any.proto google/protobuf/api.proto google/protobuf/descriptor.proto google/protobuf/duration.proto google/protobuf/empty.proto google/protobuf/field_mask.proto google/protobuf/source_context.proto google/protobuf/struct.proto google/protobuf/timestamp.proto google/protobuf/type.proto google/protobuf/wrappers.proto ' : '';
 
     final inputPath = path.normalize(buildStep.inputId.path);
 
@@ -65,6 +69,7 @@ class ProtocBuilder implements Builder {
         ...protoPaths
             .map((protoPath) => '--proto_path=${path.join('.', protoPath)}'),
         path.join('.', inputPath),
+        '$wellKnownTypes'
       ],
     );
 
