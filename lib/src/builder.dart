@@ -89,12 +89,12 @@ class ProtocBuilder implements Builder {
   @override
   Map<String, List<String>> get buildExtensions {
     return {
-      path.join(rootDirectory, '{{}}.proto'): [
-        path.join(outputDirectory, '{{}}.pb.dart'),
-        path.join(outputDirectory, '{{}}.pbenum.dart'),
-        path.join(outputDirectory, '{{}}.pbjson.dart'),
-        if (!grpcEnabled) path.join(outputDirectory, '{{}}.pbserver.dart'),
-        if (grpcEnabled) path.join(outputDirectory, '{{}}.pbgrpc.dart'),
+      '$rootDirectory/{{}}.proto': [
+        '$outputDirectory/{{}}.pb.dart',
+        '$outputDirectory/{{}}.pbenum.dart',
+        '$outputDirectory/{{}}.pbjson.dart',
+        if (!grpcEnabled) '$outputDirectory/{{}}.pbserver.dart',
+        if (grpcEnabled) '$outputDirectory/{{}}.pbgrpc.dart',
       ],
     };
   }
