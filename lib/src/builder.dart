@@ -17,7 +17,7 @@ String join(String a, String b) => a.endsWith("/") ? "$a$b" : "$a/$b";
 
 class ProtocBuilder implements Builder {
   static const defaultProtocVersion = '3.19.1';
-  static const defaultProtocPluginVersion = '20.0.0';
+  static const defaultProtocPluginVersion = '20.0.1';
   static const defaultRootDirectory = 'proto/';
   static const defaultProtoPaths = ['proto/'];
   static const defaultOutputDirectory = 'lib/src/proto/';
