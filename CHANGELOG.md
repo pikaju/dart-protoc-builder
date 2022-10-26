@@ -1,3 +1,8 @@
+## 0.3.0
+
+* Support plugin version 20.0.1 (thank you to [stasgora](https://github.com/stasgora)!)
+* Fix package not working on Windows (thank you to [Levi-Lesches](https://github.com/Levi-Lesches)!)
+
 ## 0.2.1+1
 
 * I dun goofed
