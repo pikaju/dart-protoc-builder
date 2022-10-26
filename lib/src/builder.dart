@@ -9,6 +9,12 @@ import 'package:yaml/yaml.dart';
 
 import 'protoc_download.dart';
 
+/// Adds a forward slash between the two paths. 
+/// 
+/// NOTE: Do NOT use path.join, since package:build is expecting a forward slash
+/// regardless of the platform, but path.join will return a backslash on Windows.
+String join(String a, String b) => a.endsWith("/") ? "$a$b" : "$a/$b";
+
 class ProtocBuilder implements Builder {
   static const defaultProtocVersion = '3.19.1';
   static const defaultProtocPluginVersion = '20.0.0';
@@ -23,8 +29,7 @@ class ProtocBuilder implements Builder {
         protocPluginVersion =
             options.config['protoc_plugin_version'] as String? ??
                 defaultProtocPluginVersion,
-        rootDirectory = path.normalize(
-            options.config['root_dir'] as String? ?? defaultRootDirectory),
+        rootDirectory = options.config['root_dir'] as String? ?? defaultRootDirectory,
         protoPaths = (options.config['proto_paths'] as YamlList?)
                 ?.nodes
                 .map((e) => e.value as String)
@@ -89,12 +94,12 @@ class ProtocBuilder implements Builder {
   @override
   Map<String, List<String>> get buildExtensions {
     return {
-      path.join(rootDirectory, '{{}}.proto'): [
-        path.join(outputDirectory, '{{}}.pb.dart'),
-        path.join(outputDirectory, '{{}}.pbenum.dart'),
-        path.join(outputDirectory, '{{}}.pbjson.dart'),
-        if (!grpcEnabled) path.join(outputDirectory, '{{}}.pbserver.dart'),
-        if (grpcEnabled) path.join(outputDirectory, '{{}}.pbgrpc.dart'),
+      join(rootDirectory, '{{}}.proto'): [
+        '$outputDirectory/{{}}.pb.dart',
+        '$outputDirectory/{{}}.pbenum.dart',
+        '$outputDirectory/{{}}.pbjson.dart',
+        if (!grpcEnabled) '$outputDirectory/{{}}.pbserver.dart',
+        if (grpcEnabled) '$outputDirectory/{{}}.pbgrpc.dart',
       ],
     };
   }
