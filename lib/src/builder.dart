@@ -22,6 +22,7 @@ class ProtocBuilder implements Builder {
   static const defaultProtoPaths = ['proto/'];
   static const defaultOutputDirectory = 'lib/src/proto/';
   static const defaultGrpcEnabled = false;
+  static const defaultUseInstalledProtoc = false;
 
   ProtocBuilder(this.options)
       : protobufVersion = options.config['protobuf_version'] as String? ??
@@ -37,7 +38,9 @@ class ProtocBuilder implements Builder {
             defaultProtoPaths,
         outputDirectory = path.normalize(
             options.config['out_dir'] as String? ?? defaultOutputDirectory),
-        grpcEnabled = options.config['grpc'] as bool? ?? defaultGrpcEnabled;
+        grpcEnabled = options.config['grpc'] as bool? ?? defaultGrpcEnabled,
+        useInstalledProtoc = options.config['use_installed_protoc'] as bool? ??
+            defaultUseInstalledProtoc;
 
   final BuilderOptions options;
 
@@ -47,11 +50,17 @@ class ProtocBuilder implements Builder {
   final List<String> protoPaths;
   final String outputDirectory;
   final bool grpcEnabled;
+  final bool useInstalledProtoc;
 
   @override
   Future<void> build(BuildStep buildStep) async {
-    final protoc = await fetchProtoc(protobufVersion);
-    final protocPlugin = await fetchProtocPlugin(protocPluginVersion);
+    // When "useInstalledProtoc", we will not fetch any external resources
+    final protoc = useInstalledProtoc
+        ? File('protoc')
+        : await fetchProtoc(protobufVersion);
+    final protocPlugin = useInstalledProtoc
+        ? File('')
+        : await fetchProtocPlugin(protocPluginVersion);
 
     final inputPath = path.normalize(buildStep.inputId.path);
 
@@ -65,7 +74,8 @@ class ProtocBuilder implements Builder {
     await ProcessExtensions.runSafely(
       protoc.path,
       [
-        '--plugin=protoc-gen-dart=${protocPlugin.path}',
+        if (protocPlugin.path.isNotEmpty)
+          '--plugin=protoc-gen-dart=${protocPlugin.path}',
         '--dart_out=$pluginParameters${path.join('.', outputDirectory)}',
         ...protoPaths
             .map((protoPath) => '--proto_path=${path.join('.', protoPath)}'),

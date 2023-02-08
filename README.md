@@ -56,6 +56,9 @@ targets:
           # Enable the gRPC flag for the Dart protoc plugin to generate `.pbgrpc.dart` files.
           # (Default: false)
           grpc: true
+          # Use the "protoc" command that's available on the PATH instead of downloading one
+          # (Default: false)
+          use_installed_protoc: false
 ```
 
 ## Running
