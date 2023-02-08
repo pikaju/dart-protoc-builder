@@ -9,8 +9,8 @@ import 'package:yaml/yaml.dart';
 
 import 'protoc_download.dart';
 
-/// Adds a forward slash between the two paths. 
-/// 
+/// Adds a forward slash between the two paths.
+///
 /// NOTE: Do NOT use path.join, since package:build is expecting a forward slash
 /// regardless of the platform, but path.join will return a backslash on Windows.
 String join(String a, String b) => a.endsWith("/") ? "$a$b" : "$a/$b";
@@ -30,7 +30,8 @@ class ProtocBuilder implements Builder {
         protocPluginVersion =
             options.config['protoc_plugin_version'] as String? ??
                 defaultProtocPluginVersion,
-        rootDirectory = options.config['root_dir'] as String? ?? defaultRootDirectory,
+        rootDirectory =
+            options.config['root_dir'] as String? ?? defaultRootDirectory,
         protoPaths = (options.config['proto_paths'] as YamlList?)
                 ?.nodes
                 .map((e) => e.value as String)
@@ -69,18 +70,12 @@ class ProtocBuilder implements Builder {
     // Read the input path to signal to the build graph that if the file changes
     // then it should be rebuilt.
     await buildStep.readAsString(buildStep.inputId);
-
+    // Create the output directory (if necessary)
     await Directory(outputDirectory).create(recursive: true);
+    // And run the "protoc" process
     await ProcessExtensions.runSafely(
       protoc.path,
-      [
-        if (protocPlugin.path.isNotEmpty)
-          '--plugin=protoc-gen-dart=${protocPlugin.path}',
-        '--dart_out=$pluginParameters${path.join('.', outputDirectory)}',
-        ...protoPaths
-            .map((protoPath) => '--proto_path=${path.join('.', protoPath)}'),
-        path.join('.', inputPath),
-      ],
+      collectProtocArguments(protocPlugin, pluginParameters, inputPath),
     );
 
     // Just as with the read, the build runner spies on what we write, so we
@@ -90,15 +85,33 @@ class ProtocBuilder implements Builder {
     // we were expected to write were actually written, since this will fail if
     // an output file wasn't created by protoc.
     await Future.wait(buildStep.allowedOutputs.map((AssetId out) async {
-      final file = File(out.path);
+      var file = loadOutputFile(out);
       // When there is no service definition in a .proto file, the respective
       // .pbgrpc.dart file is not generated. So, we will tolerate its absence.
       if (file.path.endsWith('.pbgrpc.dart') && !await file.exists()) {
         return;
       }
-
       await buildStep.writeAsBytes(out, file.readAsBytes());
     }));
+  }
+
+  /// Load the output file.
+  /// This method has been explicitly extracted so it can be easily overridden
+  /// in unit tests, where we may need to exert some extra control.
+  File loadOutputFile(AssetId out) => File(out.path);
+
+  /// Collect all arguments to be added to the "protoc" call.
+  /// This method has been explicitly extracted so it can be easily overridden
+  /// in unit tests, where we may need to exert some extra control.
+  List<String> collectProtocArguments(File protocPlugin, String pluginParameters, String inputPath) {
+    return <String>[
+      if (protocPlugin.path.isNotEmpty)
+        '--plugin=protoc-gen-dart=${protocPlugin.path}',
+      '--dart_out=$pluginParameters${path.join('.', outputDirectory)}',
+      ...protoPaths
+          .map((protoPath) => '--proto_path=${path.join('.', protoPath)}'),
+      path.join('.', inputPath),
+    ];
   }
 
   @override
