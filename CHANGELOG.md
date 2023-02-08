@@ -1,3 +1,7 @@
+## 0.3.1
+
+* Added option to use local `protoc` instead of downloading one (saves about 10 seconds per build)
+
 ## 0.3.0
 
 * Support plugin version 20.0.1 (thank you to [stasgora](https://github.com/stasgora)!)
