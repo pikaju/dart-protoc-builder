@@ -1,3 +1,8 @@
+## 0.3.2
+
+* Extracted options that might be useful when overriding the ProtocBuilder class.
+* Export the `builder.dart` file so the ProtocBuilder class can actually be found.
+
 ## 0.3.1
 
 * Added option to use local `protoc` instead of downloading one (saves about 10 seconds per build)
