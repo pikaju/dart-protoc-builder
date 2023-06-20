@@ -1,3 +1,7 @@
+## 0.4.0
+
+- Add option to precompile protoc_plugin Dart scripts for better performance
+
 ## 0.3.2
 
 - Upgrade dependencies

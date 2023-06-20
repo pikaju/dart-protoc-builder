@@ -23,6 +23,7 @@ class ProtocBuilder implements Builder {
   static const defaultOutputDirectory = 'lib/src/proto/';
   static const defaultGrpcEnabled = false;
   static const defaultUseInstalledProtoc = false;
+  static const defaultPrecompileProtocPlugin = true;
 
   ProtocBuilder(this.options)
       : protobufVersion = options.config['protobuf_version'] as String? ??
@@ -41,7 +42,10 @@ class ProtocBuilder implements Builder {
             options.config['out_dir'] as String? ?? defaultOutputDirectory),
         grpcEnabled = options.config['grpc'] as bool? ?? defaultGrpcEnabled,
         useInstalledProtoc = options.config['use_installed_protoc'] as bool? ??
-            defaultUseInstalledProtoc;
+            defaultUseInstalledProtoc,
+        precompileProtocPlugin =
+            options.config['precompile_protoc_plugin'] as bool? ??
+                defaultPrecompileProtocPlugin;
 
   final BuilderOptions options;
 
@@ -52,6 +56,7 @@ class ProtocBuilder implements Builder {
   final String outputDirectory;
   final bool grpcEnabled;
   final bool useInstalledProtoc;
+  final bool precompileProtocPlugin;
 
   @override
   Future<void> build(BuildStep buildStep) async {
@@ -61,7 +66,7 @@ class ProtocBuilder implements Builder {
         : await fetchProtoc(protobufVersion);
     final protocPlugin = useInstalledProtoc
         ? File('')
-        : await fetchProtocPlugin(protocPluginVersion);
+        : await fetchProtocPlugin(protocPluginVersion, precompileProtocPlugin);
 
     final inputPath = path.normalize(buildStep.inputId.path);
 
@@ -103,7 +108,8 @@ class ProtocBuilder implements Builder {
   /// Collect all arguments to be added to the "protoc" call.
   /// This method has been explicitly extracted so it can be easily overridden
   /// in unit tests, where we may need to exert some extra control.
-  List<String> collectProtocArguments(File protocPlugin, String pluginParameters, String inputPath) {
+  List<String> collectProtocArguments(
+      File protocPlugin, String pluginParameters, String inputPath) {
     return <String>[
       if (protocPlugin.path.isNotEmpty)
         '--plugin=protoc-gen-dart=${protocPlugin.path}',

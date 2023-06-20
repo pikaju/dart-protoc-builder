@@ -7,7 +7,9 @@ The `protoc_builder` package downloads the necessary Protobuf dependencies for y
 temporary local directory, thereby streamlining the development process.
 
 ## Installation
+
 Add the necessary dependencies to your `pubspec.yaml` file:
+
 ```yaml
 dev_dependencies:
   build_runner: <latest>
@@ -15,7 +17,9 @@ dev_dependencies:
 ```
 
 ## Configuration
+
 You must add your `.proto` files to a `build.yaml` file next to the `pubspec.yaml`:
+
 ```yaml
 targets:
   $default:
@@ -24,9 +28,11 @@ targets:
       - lib/$lib$
       - proto/** # Your .proto directory
 ```
+
 This will use the default configuration for the `protoc_builder`.
 
 You may also configure custom options:
+
 ```yaml
 targets:
   $default:
@@ -59,11 +65,17 @@ targets:
           # Use the "protoc" command that's available on the PATH instead of downloading one
           # (Default: false)
           use_installed_protoc: false
+          # Whether or not the protoc_plugin Dart scripts should be precompiled for better performance.
+          # (Default: true)
+          precompile_protoc_plugin: true
 ```
 
 ## Running
+
 Once everything is set up, you may simply run the `build_runner` package:
+
 ```bash
-pub run build_runner build
+dart run build_runner build
 ```
+
 The `build_runner` sometimes caches results longer than it should, so in some cases, it may be necessary to delete the `.dart_tool/build` directory.
