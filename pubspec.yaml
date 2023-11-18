@@ -4,7 +4,7 @@ version: 0.4.0
 repository: https://github.com/pikaju/dart-protoc-builder
 
 environment:
-  sdk: ">=2.14.4 <4.0.0"
+  sdk: ">=2.16.0 <4.0.0"
 
 dependencies:
   archive: ^3.1.6
