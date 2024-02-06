@@ -46,11 +46,17 @@ Future<File> fetchProtoc(String version) async {
   final protoc = File(
     path.join(versionDirectory.path, 'bin', _protocExecutableName()),
   );
-  if (protocFetched) return protoc;
+  if (protocFetched) {
+    int retries = 0;
+    // If the compiler version has already been downloaded, the function is done.
+    while (!await protoc.exists() && retries < 10) {
+      await Future.delayed(Duration(milliseconds: 100));
+      retries++;
+    }
+    return protoc;
+  }
   protocFetched = true;
 
-  // If the compiler version has already been downloaded, the function is done.
-  if (await versionDirectory.exists()) return protoc;
   // Download and unzip the .zip file containing protoc and Google .proto files.
   await unzipUri(_protocUriFromVersion(version), versionDirectory);
 
