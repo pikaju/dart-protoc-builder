@@ -61,6 +61,7 @@ class ProtocBuilder implements Builder {
   @override
   Future<void> build(BuildStep buildStep) async {
     // When "useInstalledProtoc", we will not fetch any external resources
+    print("Executing buildStep $buildStep");
     final protoc = useInstalledProtoc
         ? File('protoc')
         : await fetchProtoc(protobufVersion);
