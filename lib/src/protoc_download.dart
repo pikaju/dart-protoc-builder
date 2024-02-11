@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:build/build.dart';
 import 'package:path/path.dart' as path;
+import 'package:protoc_builder/src/protoc_plugin_download.dart';
 
 import 'utility.dart';
 
@@ -16,10 +18,10 @@ Uri _protocUriFromVersion(String version) {
     platformString = Abi.current() == Abi.windowsIA32 ? 'win32' : 'win64';
   } else if (Platform.isMacOS) {
     platformString =
-      Abi.current() == Abi.macosArm64 ? 'osx-aarch_64' : 'osx-x86_64';
+        Abi.current() == Abi.macosArm64 ? 'osx-aarch_64' : 'osx-x86_64';
   } else if (Platform.isLinux) {
     platformString =
-      Abi.current() == Abi.linuxArm64 ? 'linux-aarch_64' : 'linux-x86_64';
+        Abi.current() == Abi.linuxArm64 ? 'linux-aarch_64' : 'linux-x86_64';
   } else {
     throw UnsupportedError('Build platform not supported.');
   }
@@ -31,8 +33,7 @@ String _protocExecutableName() {
   return Platform.isWindows ? 'protoc.exe' : 'protoc';
 }
 
-/// Guard to avoid multiple download of protoc compiler.
-bool protocFetched = false;
+RunOnceProcess _fetchProtoc = RunOnceProcess();
 
 /// Downloads the Protobuf compiler from the GitHub Releases page and extracts
 /// it to a temporary working directory.
@@ -46,22 +47,14 @@ Future<File> fetchProtoc(String version) async {
   final protoc = File(
     path.join(versionDirectory.path, 'bin', _protocExecutableName()),
   );
-  if (protocFetched) {
-    int retries = 0;
-    // If the compiler version has already been downloaded, the function is done.
-    while (!await protoc.exists() && retries < 10) {
-      await Future.delayed(Duration(milliseconds: 100));
-      retries++;
-    }
-    return protoc;
-  }
-  protocFetched = true;
+  await _fetchProtoc.executeOnce(() async {
+    log.info("Downloading protoc version $version\n");
+    // Download and unzip the .zip file containing protoc and Google .proto files.
+    await unzipUri(_protocUriFromVersion(version), versionDirectory);
 
-  // Download and unzip the .zip file containing protoc and Google .proto files.
-  await unzipUri(_protocUriFromVersion(version), versionDirectory);
-
-  // Make protoc executable on non-Windows platforms.
-  await addRunnableFlag(protoc);
-
+    // Make protoc executable on non-Windows platforms.
+    await addRunnableFlag(protoc);
+    return true;
+  });
   return protoc;
 }

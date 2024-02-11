@@ -20,33 +20,36 @@ String _protoPluginName() {
 class RunOnceProcess {
   bool onTheRun = false;
   bool done = false;
+
+  ///
+  /// Wrap a process to [execute] once per all build steps and ensure, that it is executed once
+  /// only.
+  ///
+  Future<void> executeOnce(Future<bool> Function() execute) async {
+    if (done) {
+      // print("Protoc compiler had been unpacked already.");
+      return;
+    }
+    while (onTheRun) {
+      // print("waiting for other process unpacking protoc compiler");
+      await Future.delayed(const Duration(seconds: 1));
+    }
+    if (!done) {
+      //print("Need to unpack the protoc compiler");
+      onTheRun = true;
+      try {
+        done = await execute();
+        //print("Protoc compiler was unpacked with success=$_unpacked");
+      } finally {
+        onTheRun = false;
+      }
+    }
+  }
+
 }
 
 RunOnceProcess _unpack = RunOnceProcess();
 RunOnceProcess _precompile = RunOnceProcess();
-
-///
-/// Wrap the process of unpacking the protoc plugin into
-Future<void> _executeOnce(RunOnceProcess processState, Future<bool> Function() unpack) async {
-  if (processState.done) {
-    // print("Protoc compiler had been unpacked already.");
-    return;
-  }
-  while (processState.onTheRun) {
-    // print("waiting for other process unpacking protoc compiler");
-    await Future.delayed(const Duration(seconds: 1));
-  }
-  if (!processState.done) {
-    //print("Need to unpack the protoc compiler");
-    processState.onTheRun = true;
-    try {
-      processState.done = await unpack();
-      //print("Protoc compiler was unpacked with success=$_unpacked");
-    } finally {
-      processState.onTheRun = false;
-    }
-  }
-}
 
 /// Downloads the Dart plugin for the Protobuf compiler from the GitHub Releases
 /// page and extracts it to a temporary working directory.
@@ -78,7 +81,7 @@ Future<File> fetchProtocPlugin(
     ),
   );
 
-  await _executeOnce(_unpack, () async {
+  await _unpack.executeOnce(() async {
     try {
       // If the plugin has not been downloaded yet, download it.
       if (!await versionDirectory.exists()) {
@@ -117,7 +120,7 @@ Future<File> fetchProtocPlugin(
         precompiledName,
       ),
     );
-    await _executeOnce(_precompile, () async {
+    await _precompile.executeOnce(() async {
       if (!await precompiledProtocPlugin.exists()) {
         // Compile the entry point file.
         await ProcessExtensions.runSafely(
