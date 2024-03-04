@@ -1,3 +1,7 @@
+## 0.4.1
+
+- Fix race conditions (thank you to [TomKrauss](https://github.com/TomKrauss)!)
+
 ## 0.4.0
 
 - Add option to precompile protoc_plugin Dart scripts for better performance
