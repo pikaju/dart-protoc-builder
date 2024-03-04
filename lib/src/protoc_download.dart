@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 
+import 'package:build/build.dart';
 import 'package:path/path.dart' as path;
+import 'package:protoc_builder/src/protoc_plugin_download.dart';
 
 import 'utility.dart';
 
@@ -11,18 +14,16 @@ final Directory _compilerDirectory =
 
 Uri _protocUriFromVersion(String version) {
   String platformString;
-  switch (Platform.operatingSystem) {
-    case 'windows':
-      platformString = 'win64';
-      break;
-    case 'macos':
-      platformString = 'osx-x86_64';
-      break;
-    case 'linux':
-      platformString = 'linux-x86_64';
-      break;
-    default:
-      throw UnsupportedError('Build platform not supported.');
+  if (Platform.isWindows) {
+    platformString = Abi.current() == Abi.windowsIA32 ? 'win32' : 'win64';
+  } else if (Platform.isMacOS) {
+    platformString =
+        Abi.current() == Abi.macosArm64 ? 'osx-aarch_64' : 'osx-x86_64';
+  } else if (Platform.isLinux) {
+    platformString =
+        Abi.current() == Abi.linuxArm64 ? 'linux-aarch_64' : 'linux-x86_64';
+  } else {
+    throw UnsupportedError('Build platform not supported.');
   }
   return Uri.parse(
       'https://github.com/protocolbuffers/protobuf/releases/download/v$version/protoc-$version-$platformString.zip');
@@ -31,6 +32,8 @@ Uri _protocUriFromVersion(String version) {
 String _protocExecutableName() {
   return Platform.isWindows ? 'protoc.exe' : 'protoc';
 }
+
+RunOnceProcess _fetchProtoc = RunOnceProcess();
 
 /// Downloads the Protobuf compiler from the GitHub Releases page and extracts
 /// it to a temporary working directory.
@@ -44,15 +47,14 @@ Future<File> fetchProtoc(String version) async {
   final protoc = File(
     path.join(versionDirectory.path, 'bin', _protocExecutableName()),
   );
+  await _fetchProtoc.executeOnce(() async {
+    log.info("Downloading protoc version $version\n");
+    // Download and unzip the .zip file containing protoc and Google .proto files.
+    await unzipUri(_protocUriFromVersion(version), versionDirectory);
 
-  // If the compiler version has already been downloaded, the function is done.
-  if (await versionDirectory.exists()) return protoc;
-
-  // Download and unzip the .zip file containing protoc and Google .proto files.
-  await unzipUri(_protocUriFromVersion(version), versionDirectory);
-
-  // Make protoc executable on non-Windows platforms.
-  await addRunnableFlag(protoc);
-
+    // Make protoc executable on non-Windows platforms.
+    await addRunnableFlag(protoc);
+    return true;
+  });
   return protoc;
 }

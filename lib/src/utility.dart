@@ -17,6 +17,7 @@ final Directory temporaryDirectory =
 /// limit the amount of files extracted from the archive.
 Future<void> unzipUri(Uri uri, Directory target,
     [bool Function(ArchiveFile file)? test]) async {
+
   final archive = ZipDecoder().decodeBytes(await http.readBytes(uri));
   for (final file in archive) {
     final filename = file.name;
