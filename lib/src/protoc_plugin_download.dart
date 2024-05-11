@@ -115,9 +115,6 @@ Future<File> fetchProtocPlugin(
       if (!await versionDirectory.exists()) {
         await fetcher.fetchInto(versionDirectory);
 
-        print(
-            'workDir: ${path.join(protocPluginPackageDirectory.path, 'protoc_plugin')}');
-
         // Fetch protoc_plugin package dependencies.
         await Future.wait(packages.map((pkg) => ProcessExtensions.runSafely(
               'dart',
