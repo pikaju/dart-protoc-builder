@@ -68,6 +68,9 @@ targets:
           # Whether or not the protoc_plugin Dart scripts should be precompiled for better performance.
           # (Default: true)
           precompile_protoc_plugin: true
+          # Custom protoc_plugin parameters.
+          # (Default: [])
+          protoc_plugin_parameters: []
 ```
 
 ## Running
