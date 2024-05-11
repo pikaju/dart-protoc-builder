@@ -49,6 +49,10 @@ targets:
           # The version of the Dart protoc_plugin package to use.
           # (Default: "20.0.1", make sure to use quotation marks)
           protoc_plugin_version: "20.0.1"
+          # Prefer the protoc_plugin defined by a dev_dependency.
+          # (Default: true)
+          # Takes priority over protoc_plugin_version and use_installed_protoc.
+          use_protoc_plugin_from_pubspec: true
           # Directory which is treated as the root of all Protobuf files.
           # (Default: "proto/")
           root_dir: "proto/"
