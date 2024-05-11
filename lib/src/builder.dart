@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:build/build.dart';
 import 'package:path/path.dart' as path;
 import 'package:protoc_builder/src/protoc_plugin_download.dart';
+import 'package:protoc_builder/src/protoc_plugin_pubspec.dart';
 import 'package:protoc_builder/src/utility.dart';
 import 'package:yaml/yaml.dart';
 
@@ -24,6 +25,7 @@ class ProtocBuilder implements Builder {
   static const defaultGrpcEnabled = false;
   static const defaultUseInstalledProtoc = false;
   static const defaultPrecompileProtocPlugin = true;
+  static const defaultUseProtocPluginFromPubspec = true;
 
   ProtocBuilder(this.options)
       : protobufVersion = options.config['protobuf_version'] as String? ??
@@ -45,7 +47,10 @@ class ProtocBuilder implements Builder {
             defaultUseInstalledProtoc,
         precompileProtocPlugin =
             options.config['precompile_protoc_plugin'] as bool? ??
-                defaultPrecompileProtocPlugin;
+                defaultPrecompileProtocPlugin,
+        useProtocPluginFromPubspec =
+            options.config['use_protoc_plugin_from_pubspec'] as bool? ??
+                defaultUseProtocPluginFromPubspec;
 
   final BuilderOptions options;
 
@@ -57,6 +62,7 @@ class ProtocBuilder implements Builder {
   final bool grpcEnabled;
   final bool useInstalledProtoc;
   final bool precompileProtocPlugin;
+  final bool useProtocPluginFromPubspec;
 
   @override
   Future<void> build(BuildStep buildStep) async {
@@ -64,9 +70,13 @@ class ProtocBuilder implements Builder {
     final protoc = useInstalledProtoc
         ? File('protoc')
         : await fetchProtoc(protobufVersion);
-    final protocPlugin = useInstalledProtoc
-        ? File('')
-        : await fetchProtocPlugin(protocPluginVersion, precompileProtocPlugin);
+    final protocPlugin = (useProtocPluginFromPubspec
+            ? await protocPluginPubspecCommand(precompileProtocPlugin)
+            : null) ??
+        (useInstalledProtoc
+            ? null
+            : (await fetchProtocPlugin(ProtocDownloader(protocPluginVersion),
+                precompileProtocPlugin)));
 
     final inputPath = path.normalize(buildStep.inputId.path);
 
@@ -109,10 +119,10 @@ class ProtocBuilder implements Builder {
   /// This method has been explicitly extracted so it can be easily overridden
   /// in unit tests, where we may need to exert some extra control.
   List<String> collectProtocArguments(
-      File protocPlugin, String pluginParameters, String inputPath) {
+      File? protocPlugin, String pluginParameters, String inputPath) {
     return <String>[
-      if (protocPlugin.path.isNotEmpty)
-        '--plugin=protoc-gen-dart=${protocPlugin.path}',
+      if (protocPlugin?.path.isNotEmpty ?? false)
+        '--plugin=protoc-gen-dart=${protocPlugin!.path}',
       '--dart_out=$pluginParameters${path.join('.', outputDirectory)}',
       ...protoPaths
           .map((protoPath) => '--proto_path=${path.join('.', protoPath)}'),

@@ -17,7 +17,6 @@ final Directory temporaryDirectory =
 /// limit the amount of files extracted from the archive.
 Future<void> unzipUri(Uri uri, Directory target,
     [bool Function(ArchiveFile file)? test]) async {
-
   final archive = ZipDecoder().decodeBytes(await http.readBytes(uri));
   for (final file in archive) {
     final filename = file.name;
@@ -83,4 +82,20 @@ extension ProcessExtensions on Process {
     if (result.exitCode != 0) throw ProcessError(executable, arguments, result);
     return result;
   }
+}
+
+Future<void> copyDirectory(Directory source, Directory destination) async {
+  await destination.create(recursive: true);
+
+  await Future.wait(await source.list(recursive: false).map((entity) async {
+    if (entity is Directory) {
+      var newDirectory = Directory(
+          path.join(destination.absolute.path, path.basename(entity.path)));
+
+      await copyDirectory(entity.absolute, newDirectory);
+    } else if (entity is File) {
+      await entity
+          .copy(path.join(destination.path, path.basename(entity.path)));
+    }
+  }).toList());
 }
