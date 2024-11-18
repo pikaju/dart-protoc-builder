@@ -26,6 +26,20 @@ class ProtocBuilder implements Builder {
   static const defaultPrecompileProtocPlugin = true;
   static const defaultWellKnownTypesEnabled = false;
 
+  static const List<String> wellKnownTypes = [
+    'google/protobuf/any.proto',
+    'google/protobuf/api.proto',
+    'google/protobuf/descriptor.proto',
+    'google/protobuf/duration.proto',
+    'google/protobuf/empty.proto',
+    'google/protobuf/field_mask.proto',
+    'google/protobuf/source_context.proto',
+    'google/protobuf/struct.proto',
+    'google/protobuf/timestamp.proto',
+    'google/protobuf/type.proto',
+    'google/protobuf/wrappers.proto'
+  ];
+
   ProtocBuilder(this.options)
       : protobufVersion = options.config['protobuf_version'] as String? ??
             defaultProtocVersion,
@@ -62,22 +76,6 @@ class ProtocBuilder implements Builder {
   final bool useInstalledProtoc;
   final bool precompileProtocPlugin;
   final bool wellKnownTypesEnabled;
-
-  late final List<String> wellKnownTypes = wellKnownTypesEnabled
-      ? [
-          'google/protobuf/any.proto',
-          'google/protobuf/api.proto',
-          'google/protobuf/descriptor.proto',
-          'google/protobuf/duration.proto',
-          'google/protobuf/empty.proto',
-          'google/protobuf/field_mask.proto',
-          'google/protobuf/source_context.proto',
-          'google/protobuf/struct.proto',
-          'google/protobuf/timestamp.proto',
-          'google/protobuf/type.proto',
-          'google/protobuf/wrappers.proto'
-        ]
-      : [];
 
   @override
   Future<void> build(BuildStep buildStep) async {
@@ -138,7 +136,7 @@ class ProtocBuilder implements Builder {
       ...protoPaths
           .map((protoPath) => '--proto_path=${path.join('.', protoPath)}'),
       path.join('.', inputPath),
-      ...wellKnownTypes
+      if (wellKnownTypesEnabled) ...wellKnownTypes
     ];
   }
 
