@@ -24,6 +24,21 @@ class ProtocBuilder implements Builder {
   static const defaultGrpcEnabled = false;
   static const defaultUseInstalledProtoc = false;
   static const defaultPrecompileProtocPlugin = true;
+  static const defaultWellKnownTypesEnabled = false;
+
+  static const List<String> wellKnownTypes = [
+    'google/protobuf/any.proto',
+    'google/protobuf/api.proto',
+    'google/protobuf/descriptor.proto',
+    'google/protobuf/duration.proto',
+    'google/protobuf/empty.proto',
+    'google/protobuf/field_mask.proto',
+    'google/protobuf/source_context.proto',
+    'google/protobuf/struct.proto',
+    'google/protobuf/timestamp.proto',
+    'google/protobuf/type.proto',
+    'google/protobuf/wrappers.proto'
+  ];
 
   ProtocBuilder(this.options)
       : protobufVersion = options.config['protobuf_version'] as String? ??
@@ -45,7 +60,10 @@ class ProtocBuilder implements Builder {
             defaultUseInstalledProtoc,
         precompileProtocPlugin =
             options.config['precompile_protoc_plugin'] as bool? ??
-                defaultPrecompileProtocPlugin;
+                defaultPrecompileProtocPlugin,
+        wellKnownTypesEnabled =
+            options.config['wellKnownTypesEnabled'] as bool? ??
+                defaultWellKnownTypesEnabled;
 
   final BuilderOptions options;
 
@@ -57,6 +75,7 @@ class ProtocBuilder implements Builder {
   final bool grpcEnabled;
   final bool useInstalledProtoc;
   final bool precompileProtocPlugin;
+  final bool wellKnownTypesEnabled;
 
   @override
   Future<void> build(BuildStep buildStep) async {
@@ -117,6 +136,7 @@ class ProtocBuilder implements Builder {
       ...protoPaths
           .map((protoPath) => '--proto_path=${path.join('.', protoPath)}'),
       path.join('.', inputPath),
+      if (wellKnownTypesEnabled) ...wellKnownTypes
     ];
   }
 
