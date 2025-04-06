@@ -44,11 +44,11 @@ targets:
       protoc_builder:
         options:
           # The version of the Protobuf compiler to use.
-          # (Default: "3.19.1", make sure to use quotation marks)
-          protobuf_version: "3.19.1"
+          # (Default: "27.0", make sure to use quotation marks)
+          protobuf_version: "27.0"
           # The version of the Dart protoc_plugin package to use.
-          # (Default: "20.0.1", make sure to use quotation marks)
-          protoc_plugin_version: "20.0.1"
+          # (Default: "21.1.2", make sure to use quotation marks)
+          protoc_plugin_version: "21.1.2"
           # Directory which is treated as the root of all Protobuf files.
           # (Default: "proto/")
           root_dir: "proto/"
@@ -65,7 +65,7 @@ targets:
           # Use the "protoc" command that's available on the PATH instead of downloading one
           # (Default: false)
           use_installed_protoc: false
-          # Whether or not the protoc_plugin Dart scripts should be precompiled for better performance.
+          # Whether the protoc_plugin Dart scripts should be precompiled for better performance.
           # (Default: true)
           precompile_protoc_plugin: true
 ```
