@@ -93,6 +93,13 @@ Future<File> fetchProtocPlugin(
               (file) => packages.contains(path.split(file.name)[1]),
         );
 
+        // Disable workspace resolution
+        await Future.wait([
+          for (final package in packages)
+            File(path.join(protocPluginPackageDirectory.path, package, 'pubspec_overrides.yaml'))
+                .writeAsString("resolution:\n"),
+        ]);
+
         // Fetch protoc_plugin package dependencies.
         await Future.wait(packages.map((pkg) =>
             ProcessExtensions.runSafely(
