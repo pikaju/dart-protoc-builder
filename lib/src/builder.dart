@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:build/build.dart';
@@ -72,15 +73,22 @@ class ProtocBuilder implements Builder {
 
     final pluginParameters = grpcEnabled ? 'grpc:' : '';
 
+    // Resolve the package root directory. We look up the package root from the Dart
+    // package config and run protoc from there.
+    final packageRoot =
+        await _resolvePackageRoot(buildStep.inputId.package);
+
     // Read the input path to signal to the build graph that if the file changes
     // then it should be rebuilt.
     await buildStep.readAsString(buildStep.inputId);
     // Create the output directory (if necessary)
-    await Directory(outputDirectory).create(recursive: true);
+    await Directory(path.join(packageRoot, outputDirectory))
+        .create(recursive: true);
     // And run the "protoc" process
     await ProcessExtensions.runSafely(
       protoc.path,
       collectProtocArguments(protocPlugin, pluginParameters, inputPath),
+      workingDirectory: packageRoot,
     );
 
     // Just as with the read, the build runner spies on what we write, so we
@@ -90,7 +98,7 @@ class ProtocBuilder implements Builder {
     // we were expected to write were actually written, since this will fail if
     // an output file wasn't created by protoc.
     await Future.wait(buildStep.allowedOutputs.map((AssetId out) async {
-      var file = loadOutputFile(out);
+      var file = loadOutputFile(out, packageRoot);
       // When there is no service definition in a .proto file, the respective
       // .pbgrpc.dart file is not generated. So, we will tolerate its absence.
       if (file.path.endsWith('.pbgrpc.dart') && !await file.exists()) {
@@ -103,7 +111,33 @@ class ProtocBuilder implements Builder {
   /// Load the output file.
   /// This method has been explicitly extracted so it can be easily overridden
   /// in unit tests, where we may need to exert some extra control.
-  File loadOutputFile(AssetId out) => File(out.path);
+   File loadOutputFile(AssetId out, String packageRoot) =>
+      File(path.join(packageRoot, out.path));
+
+  /// Resolves the filesystem root directory for [packageName] by reading
+  /// `.dart_tool/package_config.json`. Falls back to `Directory.current` when
+  /// the config is absent or the package is not listed (e.g. the root package).
+  Future<String> _resolvePackageRoot(String packageName) async {
+    final configFile = File(
+        path.join('.dart_tool', 'package_config.json'));
+    if (!await configFile.exists()) return Directory.current.path;
+
+    final config =
+        json.decode(await configFile.readAsString()) as Map<String, dynamic>;
+    final packages = config['packages'] as List<dynamic>;
+    for (final pkg in packages) {
+      if ((pkg as Map<String, dynamic>)['name'] == packageName) {
+        final rootUri = pkg['rootUri'] as String;
+        if (rootUri.startsWith('file://')) {
+          return Uri.parse(rootUri).toFilePath();
+        }
+        // rootUri is relative to the .dart_tool directory
+        return path.normalize(
+            path.join(path.dirname(configFile.path), rootUri));
+      }
+    }
+    return Directory.current.path;
+  }
 
   /// Collect all arguments to be added to the "protoc" call.
   /// This method has been explicitly extracted so it can be easily overridden
