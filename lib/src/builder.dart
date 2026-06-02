@@ -62,12 +62,20 @@ class ProtocBuilder implements Builder {
   @override
   Future<void> build(BuildStep buildStep) async {
     // When "useInstalledProtoc", we will not fetch any external resources
+    // (protoc resolved via PATH, so keep the bare name).
+    //
+    // Otherwise the downloaded binaries live under the build root's
+    // `.dart_tool/build/protoc_builder`, but protoc is spawned with
+    // `workingDirectory: packageRoot` (a package subdir under --workspace).
+    // Resolve to absolute paths so the relative download location is not
+    // re-resolved against the package root.
     final protoc = useInstalledProtoc
         ? File('protoc')
-        : await fetchProtoc(protobufVersion);
+        : (await fetchProtoc(protobufVersion)).absolute;
     final protocPlugin = useInstalledProtoc
         ? File('')
-        : await fetchProtocPlugin(protocPluginVersion, precompileProtocPlugin);
+        : (await fetchProtocPlugin(protocPluginVersion, precompileProtocPlugin))
+            .absolute;
 
     final inputPath = path.normalize(buildStep.inputId.path);
 
