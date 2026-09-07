@@ -73,6 +73,14 @@ targets:
           protoc_plugin_parameters: []
 ```
 
+### Well-known types
+
+Imports of the well-known types bundled with the Protobuf compiler (e.g.
+`google/protobuf/timestamp.proto`) resolve automatically. As of
+`protoc_plugin` 25.0.0 and `protobuf` 6.0.0 (the default versions), the
+generated code imports them from the `protobuf` package, so no additional
+setup is needed.
+
 ## Running
 
 Once everything is set up, you may simply run the `build_runner` package:
