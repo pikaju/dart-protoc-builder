@@ -24,9 +24,12 @@ You must add your `.proto` files to a `build.yaml` file next to the `pubspec.yam
 targets:
   $default:
     sources:
+      # Note: setting `sources` replaces the build_runner defaults, so keep the
+      # directories that other builders need as well (e.g. `lib/**`, `test/**`).
+      - lib/**
+      - proto/** # Your .proto directory
       - $package$
       - lib/$lib$
-      - proto/** # Your .proto directory
 ```
 
 This will use the default configuration for the `protoc_builder`.
@@ -37,9 +40,10 @@ You may also configure custom options:
 targets:
   $default:
     sources:
+      - lib/**
+      - proto/**
       - $package$
       - lib/$lib$
-      - proto/**
     builders:
       protoc_builder:
         options:

@@ -1,9 +1,10 @@
 targets:
   $default:
     sources:
+      - lib/**
+      - proto/**
       - $package$
       - lib/$lib$
-      - proto/**
     builders:
       protoc_builder:
         options:
