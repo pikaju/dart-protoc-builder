@@ -1,3 +1,15 @@
+## 0.6.0
+
+- Fix builds failing with `grpc: false` on `protoc_plugin` 22.3.0 and newer,
+  which no longer generate empty `.pbserver.dart` files. This affected the
+  default configuration in 0.5.0 and 0.5.1.
+- Support building inside pub workspaces (`dart run build_runner build
+  --workspace`): protoc is now run from the root of the package being built
+  instead of the current directory (thank you to
+  [SynSzakala](https://github.com/SynSzakala)!)
+- **Breaking** for subclasses of `ProtocBuilder`: `loadOutputFile` now takes
+  the package root as a second parameter.
+
 ## 0.5.1
 
 - Add `protoc_plugin_parameters` option to pass custom parameters to the Dart

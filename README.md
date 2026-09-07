@@ -85,6 +85,17 @@ Imports of the well-known types bundled with the Protobuf compiler (e.g.
 generated code imports them from the `protobuf` package, so no additional
 setup is needed.
 
+### Pub workspaces
+
+The builder can be used in packages that are part of a
+[pub workspace](https://dart.dev/tools/pub/workspaces). Either build a single
+member package from its own directory, or build all members at once from the
+workspace root:
+
+```bash
+dart run build_runner build --workspace
+```
+
 ## Running
 
 Once everything is set up, you may simply run the `build_runner` package:
