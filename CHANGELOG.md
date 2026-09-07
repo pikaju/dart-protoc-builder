@@ -1,3 +1,8 @@
+## 0.5.1
+
+- Add `protoc_plugin_parameters` option to pass custom parameters to the Dart
+  protoc plugin (thank you to [fischerscode](https://github.com/fischerscode)!)
+
 ## 0.5.0
 
 - Support `protoc_plugin` versions 23.0.0 and newer, which use pub workspaces
