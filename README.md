@@ -44,11 +44,11 @@ targets:
       protoc_builder:
         options:
           # The version of the Protobuf compiler to use.
-          # (Default: "27.0", make sure to use quotation marks)
-          protobuf_version: "27.0"
+          # (Default: "36.1", make sure to use quotation marks)
+          protobuf_version: "36.1"
           # The version of the Dart protoc_plugin package to use.
-          # (Default: "21.1.2", make sure to use quotation marks)
-          protoc_plugin_version: "21.1.2"
+          # (Default: "25.0.0", make sure to use quotation marks)
+          protoc_plugin_version: "25.0.0"
           # Directory which is treated as the root of all Protobuf files.
           # (Default: "proto/")
           root_dir: "proto/"

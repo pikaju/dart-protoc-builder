@@ -1,5 +1,3 @@
-library proto_build;
-
 import 'package:build/build.dart';
 
 import 'src/builder.dart';

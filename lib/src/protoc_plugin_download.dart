@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
+import 'package:yaml/yaml.dart';
 
 import 'utility.dart';
 
@@ -45,7 +46,6 @@ class RunOnceProcess {
       }
     }
   }
-
 }
 
 RunOnceProcess _unpack = RunOnceProcess();
@@ -90,23 +90,30 @@ Future<File> fetchProtocPlugin(
           _protocPluginUriFromVersion(version),
           versionDirectory,
           // Only extract the protoc_plugin from the Protobuf Git repository.
-              (file) => packages.contains(path.split(file.name)[1]),
+          (file) => packages.contains(path.split(file.name)[1]),
         );
 
+        // Since protoc_plugin 23.0.0, the packages are part of a pub
+        // workspace. As we only extract the packages themselves (and not the
+        // workspace root), `dart pub get` would fail with "found no workspace
+        // root". Opting the packages out of workspace resolution lets them
+        // resolve standalone again.
+        await Future.wait(packages.map((pkg) => _disableWorkspaceResolution(
+            Directory(path.join(protocPluginPackageDirectory.path, pkg)))));
+
         // Fetch protoc_plugin package dependencies.
-        await Future.wait(packages.map((pkg) =>
-            ProcessExtensions.runSafely(
+        await Future.wait(packages.map((pkg) => ProcessExtensions.runSafely(
               'dart',
               ['pub', 'get'],
-              workingDirectory: path.join(
-                  protocPluginPackageDirectory.path, pkg),
+              workingDirectory:
+                  path.join(protocPluginPackageDirectory.path, pkg),
             )));
 
         // Make plugin executable on non-Windows platforms.
         await addRunnableFlag(protocPlugin);
       }
       return true;
-    } catch(ex) {
+    } catch (ex) {
       print("Failed to unpack protoc plugin with $ex.");
       return false;
     }
@@ -143,4 +150,29 @@ Future<File> fetchProtocPlugin(
   } else {
     return protocPlugin;
   }
+}
+
+/// If the package in [packageDirectory] declares `resolution: workspace`, opt
+/// it out of workspace resolution via a `pubspec_overrides.yaml` file so that
+/// `dart pub get` works without the workspace root.
+/// See https://dart.dev/tools/pub/workspaces#temporarily-resolving-a-package-outside-its-workspace
+///
+/// Packages that do not use workspaces are left untouched, since the
+/// `resolution` key is rejected by pub for language versions below 3.5.
+Future<void> _disableWorkspaceResolution(Directory packageDirectory) async {
+  final pubspec = File(path.join(packageDirectory.path, 'pubspec.yaml'));
+  if (!await pubspec.exists()) return;
+  final yaml = loadYaml(await pubspec.readAsString());
+  if (yaml is! YamlMap || yaml['resolution'] != 'workspace') return;
+
+  // Some versions ship their own overrides file (e.g. a path dependency on
+  // the sibling protobuf package), so keep its content and add our key.
+  final overrides =
+      File(path.join(packageDirectory.path, 'pubspec_overrides.yaml'));
+  final existing =
+      await overrides.exists() ? await overrides.readAsString() : '';
+  final existingYaml = loadYaml(existing);
+  if (existingYaml is YamlMap && existingYaml.containsKey('resolution')) return;
+  await overrides
+      .writeAsString('${existing.trimRight()}\nresolution:\n'.trimLeft());
 }
