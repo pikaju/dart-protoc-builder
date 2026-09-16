@@ -1,3 +1,12 @@
+## Unreleased
+
+- Fix generated files being deleted by `build_runner` 2.16.1 and newer. protoc
+  writes its output to the package path (`out_dir`), but the builder did not
+  declare `build_to: source`, so `build_runner` treated those files as
+  conflicting outputs of a cached builder and deleted them on every
+  incremental build; fixes
+  [#35](https://github.com/pikaju/dart-protoc-builder/issues/35).
+
 ## 0.6.0
 
 - Fix builds failing with `grpc: false` on `protoc_plugin` 22.3.0 and newer,
