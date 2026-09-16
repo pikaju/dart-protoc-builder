@@ -1,4 +1,4 @@
-## Unreleased
+## 0.6.1
 
 - Fix generated files being deleted by `build_runner` 2.16.1 and newer. protoc
   writes its output to the package path (`out_dir`), but the builder did not
