@@ -5,4 +5,8 @@ builders:
     build_extensions: {
       ".proto": [".dart"]
     }
+    # The generated files belong in the package itself (see `out_dir`), not in
+    # the build cache. Without this, `build_runner` 2.16.1 and newer delete
+    # them again as conflicting outputs.
+    build_to: source
     auto_apply: dependents
